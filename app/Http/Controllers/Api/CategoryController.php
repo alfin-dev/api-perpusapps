@@ -77,17 +77,19 @@ class CategoryController extends Controller
             ]);
         }
 
-        DB::beginTransaction();
-        try {
-            $category = Category::create([
-                'nama_kategori' => $request->input('nama_kategori')
-            ]);
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->internalServerError('Gagal menambahkan data', $e->getMessage());
+        $category = Category::where('nama_kategori', $request->input('nama_kategori'))->first();
+        if (!$category) {
+            DB::beginTransaction();
+            try {
+                $category = Category::create([
+                    'nama_kategori' => $request->input('nama_kategori')
+                ]);
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->internalServerError('Gagal menambahkan data', $e->getMessage());
+            }
         }
-
         return response()->created(['category' => $category], 'Berhasil menambahkan data');
     }
 
